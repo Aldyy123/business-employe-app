@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1086039564603",
+    "project_id": "es-permen-karet",
+    "storage_bucket": "es-permen-karet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086039564603:android:cdae9662853191b015d71e",
+        "android_client_info": {
+          "package_name": "com.transaksi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1086039564603-nge6sdeknagqpjkro7j3tvtuscvqef0b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBweN65hKZFemxwvQVHuteegPmZ0l93dlY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1086039564603-nge6sdeknagqpjkro7j3tvtuscvqef0b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

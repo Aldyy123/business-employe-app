@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
-import MoneyIn from './Transaksi/MoneyIn';
-import MoneyOut from './Transaksi/MoneyOut';
+import TransactionIn from './Transaksi/TransactionIn';
+import TransactionOut from './Transaksi/TransactionOut';
 import RNPickerSelect from 'react-native-picker-select';
 
 const styles = StyleSheet.create({
@@ -13,7 +13,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   textTitle: {
-    color: 'red',
     textAlignVertical: 'center',
     fontSize: 15,
     marginTop: 10,
@@ -22,6 +21,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     display: 'flex',
     backgroundColor: '#FF5DA2',
+    marginTop: 10,
   },
   pickerStyle: {
     borderWidth: 1,
@@ -67,17 +67,26 @@ class Transaksi extends React.Component {
     };
   }
 
-  nextProduct() {
+  NextProduct() {
     if (this.state.selectedValue === 'Masuk') {
-      return <MoneyIn />;
+      return (
+        <TransactionIn
+          navigation={this.props.navigation}
+          theme={this.props.route.params.theme}
+        />
+      );
     } else if (this.state.selectedValue === 'Keluar') {
-      return <MoneyOut />;
+      return (
+        <TransactionOut
+          navigation={this.props.navigation}
+          theme={this.props.route.params.theme}
+        />
+      );
     }
     return null;
   }
 
   render() {
-    console.log(this.props.navigation.getState());
     return (
       <ScrollView>
         <View style={[styles.container]}>
@@ -89,7 +98,7 @@ class Transaksi extends React.Component {
               items={this.state.typeTransaction}
             />
           </View>
-          {this.nextProduct()}
+          {this.NextProduct()}
         </View>
       </ScrollView>
     );

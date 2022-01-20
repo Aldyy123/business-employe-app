@@ -14,6 +14,14 @@ target 'transaksi' do
 
   pod 'RNCPicker', :path => '../node_modules/@react-native-picker/picker'
 
+  pod 'react-native-appearance', :path => '../node_modules/react-native-appearance'
+
+  pod 'RNReanimated', :path => '../node_modules/react-native-reanimated'
+
+  pod 'RNGestureHandler', :path => '../node_modules/react-native-gesture-handler'
+
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-async-storage/async-storage'
+
   target 'transaksiTests' do
     inherit! :complete
     # Pods for testing

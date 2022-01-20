@@ -5,8 +5,9 @@ import {styles} from '../Transaksi';
 import {convertPriceIDR} from '../../helper/utils';
 import {insertTransition} from '../../firebase';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import {CommonActions} from '@react-navigation/native';
 
-const MoneyIn = ({navigation}) => {
+const MoneyIn = ({navigation, theme}) => {
   const [product, setProduct] = useState(0);
   const [listProduct] = useState([
     {label: 'Plastik', value: 2},
@@ -21,8 +22,8 @@ const MoneyIn = ({navigation}) => {
     {product: 'Plastik', price: 4000},
   ]);
   const [total, setTotal] = useState('');
-  const [showAlert, setShowAlert] = useState(false);
-
+  const [showAlertSuccess, setShowAlertSuccess] = useState(false);
+  const [showAlertFail, setShowAlertFail] = useState(false);
   const typeProducts = () => {
     if (product === 2 || product === 1) {
       return (
@@ -31,8 +32,8 @@ const MoneyIn = ({navigation}) => {
             <Text style={styles.textTitle}>Jumlah Beli</Text>
             <TextInput
               value={jumlah}
-              style={styles.pickerStyle}
-              onChangeText={setJumlah}
+              style={[styles.pickerStyle, {color: theme.colors.text}]}
+              onChangeText={value => setJumlah(value.replace(/[^1-9]/g, ''))}
               keyboardType={'numeric'}
               placeholder={'Masukan Jumlah Beli'}
               dataDetectorTypes={'all'}
@@ -43,7 +44,7 @@ const MoneyIn = ({navigation}) => {
             <TextInput
               value={total}
               editable={false}
-              style={styles.pickerStyle}
+              style={[styles.pickerStyle, {color: theme.colors.text}]}
               keyboardType={'numeric'}
               dataDetectorTypes={'all'}
             />
@@ -68,7 +69,7 @@ const MoneyIn = ({navigation}) => {
           <View>
             <Text style={styles.textTitle}>Jumlah Beli Plastik</Text>
             <TextInput
-              style={styles.pickerStyle}
+              style={[styles.pickerStyle, {color: theme.colors.text}]}
               value={jumlahPlastik}
               onChangeText={setJumlahPlastik}
               keyboardType={'numeric'}
@@ -79,8 +80,8 @@ const MoneyIn = ({navigation}) => {
             <Text style={styles.textTitle}>Jumlah Beli Cup</Text>
             <TextInput
               value={jumlahCup}
-              style={styles.pickerStyle}
-              onChangeText={setJumlahCup}
+              style={[styles.pickerStyle, {color: theme.colors.text}]}
+              onChangeText={value => setJumlahCup(value.replace(/[^1-9]/g, ''))}
               keyboardType={'numeric'}
               dataDetectorTypes={'all'}
             />
@@ -90,7 +91,7 @@ const MoneyIn = ({navigation}) => {
             <TextInput
               value={total}
               editable={false}
-              style={styles.pickerStyle}
+              style={[styles.pickerStyle, {color: theme.colors.text}]}
               keyboardType={'numeric'}
               dataDetectorTypes={'all'}
             />
@@ -98,7 +99,7 @@ const MoneyIn = ({navigation}) => {
           <View>
             <TouchableOpacity
               disabled={!jumlahCup || !jumlahPlastik ? true : false}
-              onPress={event => btnSubmit(event)}
+              onPress={() => btnSubmit()}
               style={[
                 !jumlahCup || !jumlahPlastik
                   ? styles.disableBtn
@@ -116,38 +117,78 @@ const MoneyIn = ({navigation}) => {
 
   const btnSubmit = async () => {
     const data = productFilterSubmit();
-    try {
-      await insertTransition(data);
-      setShowAlert(true);
-    } catch (error) {
-      console.log(error);
+    if (data.length === 2) {
+      data.map(async value => {
+        try {
+          await insertTransition(value);
+          setShowAlertSuccess(true);
+        } catch (error) {
+          console.log(error);
+          setShowAlertFail(true);
+        }
+      });
+    } else {
+      console.log(data);
+      try {
+        await insertTransition(data);
+        setShowAlertSuccess(true);
+      } catch (error) {
+        console.log(error);
+        setShowAlertFail(true);
+      }
     }
   };
 
+  const backInHomeDone = () => {
+    setShowAlertSuccess(false);
+    navigation.dispatch(CommonActions.goBack());
+  };
+
   const productFilterSubmit = () => {
-    const data = {
+    let data = {
       product: typeProduct,
-      time: new Date().toLocaleString(),
+      date: new Date().getTime(),
       qty: parseInt(jumlah),
-      prices: total,
+      price: 0,
+      totalPrices: 0,
+      type: '',
     };
     let typeProduct = product;
     if (product === 1) {
       data.product = 'Cup';
+      data.price = nameProduct[product - 1].price;
+      data.totalPrices = nameProduct[product - 1].price * jumlah;
+      data.type = 'in';
       return data;
     } else if (product === 2) {
       data.product = 'Plastik';
+      data.price = nameProduct[product - 1].price;
+      data.totalPrices = nameProduct[product - 1].price * jumlah;
+      data.type = 'in';
       return data;
     } else {
-      data.product = 'Plastik & Cup';
-      data.qtyCup = parseInt(jumlahCup);
-      data.qtyPlastik = parseInt(jumlahPlastik);
-      data.qty = parseInt(jumlahCup) + parseInt(jumlahPlastik);
-      return data;
+      const ordersAll = [];
+      nameProduct.map((value, index) => {
+        data = {
+          product: value.product,
+          date: new Date().getTime(),
+          qty: index === 0 ? jumlahCup : jumlahPlastik,
+          price: value.price,
+          totalPrices:
+            index === 0 ? value.price * jumlahCup : value.price * jumlahPlastik,
+          type: 'in',
+        };
+        ordersAll.push(data);
+      });
+      return ordersAll;
     }
   };
 
   useEffect(() => {
+    setAllTotal();
+  });
+
+  const setAllTotal = () => {
     if (product >= 1 && product <= 2) {
       const productTotal = convertPriceIDR(
         nameProduct[product - 1].price * jumlah,
@@ -159,7 +200,7 @@ const MoneyIn = ({navigation}) => {
       const totalPay = convertPriceIDR(productTotalCup + productTotalPlastik);
       setTotal(totalPay.toString());
     }
-  });
+  };
 
   return (
     <>
@@ -173,7 +214,7 @@ const MoneyIn = ({navigation}) => {
       </View>
       {typeProducts()}
       <AwesomeAlert
-        show={showAlert}
+        show={showAlertSuccess}
         showProgress={false}
         title="Success"
         message="Data telah selesai diinput!"
@@ -182,7 +223,19 @@ const MoneyIn = ({navigation}) => {
         showConfirmButton={true}
         confirmText="Selesai"
         confirmButtonColor="#DD6B55"
-        onConfirmPressed={() => setShowAlert(false)}
+        onConfirmPressed={() => backInHomeDone()}
+      />
+      <AwesomeAlert
+        show={showAlertFail}
+        showProgress={false}
+        title="Gagal"
+        message="Data gagal diinput, ada kesalahan!"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#DD6B55"
+        onConfirmPressed={() => setShowAlertFail(false)}
       />
       <View style={styles.noteStyle}>
         <Text>Note:</Text>

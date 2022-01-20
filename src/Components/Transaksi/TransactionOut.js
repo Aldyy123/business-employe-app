@@ -3,10 +3,11 @@ import {View, Text, TextInput, TouchableOpacity, Alert} from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import {styles} from '../Transaksi';
 import {convertPriceIDR} from '../../helper/utils';
-// import {insertTransition} from '../../firebase';
+import {insertTransition} from '../../firebase';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import {CommonActions} from '@react-navigation/native';
 
-class MoneyOut extends React.Component {
+class TransactionOut extends React.Component {
   constructor(props) {
     super(props);
 
@@ -25,7 +26,8 @@ class MoneyOut extends React.Component {
       isUndefined: false,
       duplicateProduct: false,
       total: '0',
-      showAlert: false,
+      showAlertSuccess: false,
+      showAlertFail: false,
     };
   }
   TypeProducts = props => {
@@ -46,7 +48,10 @@ class MoneyOut extends React.Component {
           <View>
             <Text style={styles.textTitle}>Harga Beli</Text>
             <TextInput
-              style={styles.pickerStyle}
+              style={[
+                styles.pickerStyle,
+                {color: this.props.theme.colors.text},
+              ]}
               value={this.state.harga[props.index - 1]}
               placeholder={'Masukan harga barang yang akan dibeli...'}
               onChangeText={value => this.inputHarga(value, props.index)}
@@ -57,7 +62,10 @@ class MoneyOut extends React.Component {
           <View style={styles.marginBetween}>
             <Text style={styles.textTitle}>Jumlah Beli</Text>
             <TextInput
-              style={styles.pickerStyle}
+              style={[
+                styles.pickerStyle,
+                {color: this.props.theme.colors.text},
+              ]}
               value={this.state.jumlah[props.index - 1]}
               onChangeText={value => this.inputJumlah(value, props.index)}
               placeholder={'Masukan jumlah barang yang akan dibeli...'}
@@ -83,6 +91,10 @@ class MoneyOut extends React.Component {
 
   addCounter() {
     this.setState({count: this.state.count + 1});
+  }
+
+  subtractCounter() {
+    this.setState({count: this.state.count - 1});
   }
 
   listArrayUpdate(index, value, stateArray) {
@@ -125,8 +137,10 @@ class MoneyOut extends React.Component {
     const set = new Set(product);
     let result = false;
     this.setState({duplicateProduct: false});
+    console.log(...listProduct);
 
     if (product.length !== set.size) {
+      console.log(set);
       result = true;
       this.setState({duplicateProduct: true});
     }
@@ -140,14 +154,88 @@ class MoneyOut extends React.Component {
     }
   }
 
-  submitProduct(product) {
+  productFilterSubmit() {
+    let arrayData = [];
+    let data = {};
+    for (let i = 0; i < this.state.product.length; i++) {
+      switch (this.state.product[i]) {
+        case 'Galon':
+          data = {
+            product: this.state.product[i],
+            date: new Date().getTime(),
+            qty: this.state.jumlah[i],
+            price: this.state.harga[i],
+            totalPrices: this.state.harga[i] * this.state.jumlah[i],
+            type: 'out',
+          };
+          break;
+
+        case 'Es Batu':
+          data = {
+            product: this.state.product[i],
+            date: new Date().getTime(),
+            qty: this.state.jumlah[i],
+            price: this.state.harga[i],
+            type: 'out',
+            totalPrices: this.state.harga[i] * this.state.jumlah[i],
+          };
+          break;
+
+        case 'Cup Ciler':
+          data = {
+            product: this.state.product[i],
+            date: new Date().getTime(),
+            qty: this.state.jumlah[i],
+            price: this.state.harga[i],
+            type: 'out',
+            totalPrices: this.state.harga[i] * this.state.jumlah[i],
+          };
+          break;
+
+        case 'Plastik HD':
+          data = {
+            product: this.state.product[i],
+            date: new Date().getTime(),
+            qty: this.state.jumlah[i],
+            price: this.state.harga[i],
+            type: 'out',
+            totalPrices: this.state.harga[i] * this.state.jumlah[i],
+          };
+          break;
+
+        case 'Kresek':
+          data = {
+            product: this.state.product[i],
+            date: new Date().getTime(),
+            qty: this.state.jumlah[i],
+            price: this.state.harga[i],
+            totalPrices: this.state.harga[i] * this.state.jumlah[i],
+            type: 'out',
+          };
+          break;
+
+        default:
+          break;
+      }
+      arrayData.push(data);
+    }
+    return arrayData;
+  }
+
+  submitProduct() {
     if (this.state.duplicateProduct) {
       this.filterDuplicateProduct(this.state.product);
     } else {
-      // insertTransition().then(e => {
-      //   console.log(e);
-      // });
-      this.setState({showAlert: true});
+      try {
+        const datas = this.productFilterSubmit();
+        datas.map(async data => {
+          insertTransition(data);
+        });
+        this.setState({showAlertSuccess: true});
+      } catch (error) {
+        console.log(error);
+        this.setState({showAlertFail: true});
+      }
     }
   }
 
@@ -164,32 +252,63 @@ class MoneyOut extends React.Component {
         totalPrice += this.state.jumlah[i] * this.state.harga[i];
       });
       totalPrice = convertPriceIDR(totalPrice);
-      console.log(totalPrice);
       return totalPrice.toString();
     }
     return totalPrice.toString();
   }
 
-  render() {
-    const {harga, jumlah, count, product, isUndefined, showAlert} = this.state;
-    this.countTotalPrice();
-    return (
-      <>
-        {this.addProductView()}
-        <View style={styles.container}>
+  addAndRemoveElementProduct() {
+    if (this.state.count <= this.state.listProduct.length) {
+      return (
+        <>
           <TouchableOpacity
             style={styles.submitBtn}
             onPress={this.addCounter.bind(this)}>
             <Text style={styles.textBtn}>Tambah Barang +</Text>
           </TouchableOpacity>
+          {this.state.count !== 1 ? (
+            <TouchableOpacity
+              style={styles.submitBtn}
+              onPress={this.subtractCounter.bind(this)}>
+              <Text style={styles.textBtn}>Kurangi barang -</Text>
+            </TouchableOpacity>
+          ) : null}
+        </>
+      );
+    } else if (this.state.count > this.state.listProduct.length) {
+      return (
+        <>
+          <TouchableOpacity
+            style={styles.submitBtn}
+            onPress={this.subtractCounter.bind(this)}>
+            <Text style={styles.textBtn}>Kurangi barang -</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+  }
+
+  render() {
+    const {
+      count,
+      product,
+      jumlah,
+      isUndefined,
+      harga,
+      showAlertSuccess,
+      showAlertFail,
+    } = this.state;
+    return (
+      <>
+        {this.addProductView()}
+        <View style={styles.container}>
+          {this.addAndRemoveElementProduct()}
         </View>
         <View style={styles.marginBetween}>
           <Text style={styles.textTitle}>Total Pembayaran</Text>
           <TextInput
-            style={styles.pickerStyle}
+            style={[styles.pickerStyle, {color: this.props.theme.colors.text}]}
             value={this.countTotalPrice()}
-            // onChangeText={value => this.inputJumlah(value, props.index)}
-            // placeholder={'Masukan jumlah barang yang akan dibeli...'}
             editable={false}
             keyboardType={'numeric'}
             dataDetectorTypes={'all'}
@@ -218,21 +337,37 @@ class MoneyOut extends React.Component {
           </TouchableOpacity>
         </View>
         <AwesomeAlert
-          show={showAlert}
+          show={showAlertSuccess}
           showProgress={false}
           title="Success"
           message="Data telah selesai diinput!"
           closeOnTouchOutside={true}
           closeOnHardwareBackPress={false}
-          // showCancelButton={true}
           showConfirmButton={true}
           confirmText="Selesai"
           confirmButtonColor="#DD6B55"
-          onConfirmPressed={() => this.setState({showAlert: false})}
+          onConfirmPressed={() => {
+            this.setState({showAlertSuccess: false});
+            this.props.navigation.dispatch(CommonActions.goBack());
+          }}
+        />
+        <AwesomeAlert
+          show={showAlertFail}
+          showProgress={false}
+          title="Failed"
+          message="Maaf ada kesalahan!"
+          closeOnTouchOutside={true}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={true}
+          confirmText="Selesai"
+          confirmButtonColor="#DD6B55"
+          onConfirmPressed={() => {
+            this.setState({showAlertFail: false});
+          }}
         />
       </>
     );
   }
 }
 
-export default MoneyOut;
+export default TransactionOut;

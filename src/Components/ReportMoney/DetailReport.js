@@ -41,8 +41,16 @@ class DetailReport extends React.Component {
     if (this.state.dataMoney !== null) {
       for (let i = 0; i < this.state.dataMoney[0].products.length; i++) {
         component.push(
-          <View style={styles.detailList}>
-            <Text>Haloo</Text>
+          <View style={styles.detailList} key={i}>
+            <Text>{this.state.dataMoney[0].products[i].product}</Text>
+            <Text>
+              {this.state.dataMoney !== null
+                ? convertPriceIDR(
+                    this.state.dataMoney[0]?.products[i].price *
+                      this.state.dataMoney[0]?.products[i].qty,
+                  )
+                : convertPriceIDR(0)}
+            </Text>
           </View>,
         );
       }
@@ -80,7 +88,7 @@ class DetailReport extends React.Component {
                   : convertPriceIDR(0)}
               </Text>
             </View>
-            <View style={styles.detailList}>
+            <View style={[styles.detailList, {marginBottom: 10}]}>
               <Text>Uang Tutup: </Text>
               <Text>
                 {this.state.dataMoney !== null

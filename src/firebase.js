@@ -32,7 +32,7 @@ const getReportToday = () => {
     try {
       const report = firestore()
         .collection('transactions')
-        .where('date', '>=', dateTodayMilisecond())
+        .where('date', '>=', dateTodayMilisecond)
         .get();
       resolve(report);
     } catch (error) {

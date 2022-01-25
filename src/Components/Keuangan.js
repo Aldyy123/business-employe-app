@@ -7,10 +7,11 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
+import {dateTodayMilisecond, getYoutubeLikeToDisplay} from '../helper/utils';
 import {getReportToday} from '../firebase';
 import {convertPriceIDR} from '../helper/utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Calendar} from 'react-native-calendars';
+import moment from 'moment';
 
 const {width, height} = Dimensions.get('window');
 
@@ -86,7 +87,8 @@ class Keuangan extends React.Component {
   }
 
   reportData() {
-    let data = null,
+    let dataMorning = null,
+      dataEvening = null,
       totalIn = 0,
       totalOut = 0;
     const now = new Date().getTime();
@@ -97,27 +99,50 @@ class Keuangan extends React.Component {
         product.push({
           product: value._data.product,
           price: value._data.price,
+          qty: value._data.qty,
         });
         totalOut += value._data.totalPrices;
       } else {
         totalIn += value._data.totalPrices;
       }
-      data = {
-        moneyOut: totalOut,
-        moneyIn: totalIn,
-        date: now,
-        products: product,
-        openMoney: 150000,
-      };
+      if (new Date().getHours() >= 15) {
+        dataEvening = {
+          moneyOut: totalOut,
+          moneyIn: totalIn,
+          date: now,
+          products: product,
+          openMoney: 150000,
+        };
+      } else {
+        dataMorning = {
+          moneyOut: totalOut,
+          moneyIn: totalIn,
+          date: now,
+          products: product,
+          openMoney: 150000,
+        };
+      }
     });
-    const quickReport = [data];
+    const quickReport = [dataMorning, dataEvening];
     return quickReport;
   }
 
   async insertLocalStorage() {
     try {
       const report = this.reportData();
-      await AsyncStorage.setItem('today', JSON.stringify(report));
+      const storage = JSON.parse(await AsyncStorage.getItem('today'));
+      console.log(storage);
+      if (!storage) {
+        if (storage[0].date <= dateTodayMilisecond) {
+          console.log(storage);
+        } else {
+          if (report !== null)
+            await AsyncStorage.setItem('today', JSON.stringify(report));
+        }
+      } else {
+        if (report !== null)
+          await AsyncStorage.setItem('today', JSON.stringify(report));
+      }
     } catch (error) {
       console.log(error);
     }
@@ -125,6 +150,11 @@ class Keuangan extends React.Component {
 
   viewReportToday() {
     const report = this.reportData();
+    console.log(dateTodayMilisecond());
+    const apa = dateTodayMilisecond().toString().substring(5);
+    console.log(apa <= 54000000);
+    const iya = getYoutubeLikeToDisplay(apa);
+    console.log(iya);
 
     if (report[0] !== null) {
       return (
@@ -164,11 +194,6 @@ class Keuangan extends React.Component {
               <Text style={styles.textLitle}>Rp 4000</Text>
             </View>
           </View>
-          <Calendar
-            onDayPress={day => {
-              console.log('selected day', day);
-            }}
-          />
         </ScrollView>
       </>
     );

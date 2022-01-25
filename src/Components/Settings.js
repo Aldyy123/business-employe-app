@@ -1,5 +1,15 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import {useTheme} from '@react-navigation/native';
+
+const {height} = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   profileImage: {
@@ -13,28 +23,92 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
   },
+  lineCap: {
+    width: '90%',
+    alignSelf: 'center',
+    height: 10,
+    borderRadius: 50,
+    marginTop: 20,
+    justifyContent: 'center',
+    display: 'flex',
+  },
+  btnSettings: {
+    padding: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    marginTop: 10,
+    shadowOffset: {height: 20, width: 20},
+    shadowColor: 'red',
+  },
+  textSettings: {
+    color: 'black',
+  },
+  btnLogOut: {
+    backgroundColor: 'red',
+    marginBottom: 50,
+    padding: 10,
+    borderRadius: 50,
+  },
+  textLogOut: {
+    textAlign: 'center',
+    color: 'white',
+  },
+  squareRadiuses: {
+    backgroundColor: '#92A9BD',
+    width: '100%',
+    height: height / 1.3,
+    padding: 10,
+    marginTop: 50,
+    borderRadius: 40,
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
 });
 
-class Settings extends React.Component {
-  // constructor(props) {
-  //   this.state = {};
-  // }
-
-  render() {
-    return (
-      <>
-        <View style={styles.profileImage}>
-          <View style={styles.profileInfo}>
-            <Text>Mohammad Ardyy</Text>
-            <Text>Es permen karet</Text>
-          </View>
-          <View>
-            <Text>Edit</Text>
-          </View>
+function Settings({navigation}) {
+  const theme = useTheme();
+  return (
+    <>
+      <View style={styles.profileImage}>
+        <View style={styles.profileInfo}>
+          <Text>Mohammad Ardyy</Text>
+          <Text>Es permen karet</Text>
         </View>
-      </>
-    );
-  }
+        <View>
+          <Text>Edit</Text>
+        </View>
+      </View>
+      <View
+        style={[
+          styles.lineCap,
+          {backgroundColor: theme.dark ? 'white' : 'black'},
+        ]}
+      />
+      <View style={styles.squareRadiuses}>
+        <View>
+          <TouchableOpacity style={[styles.btnSettings, {marginTop: 50}]}>
+            <Text style={styles.textSettings}>Pengaturan Harga</Text>
+            <Image source={require('../Assets/arrow.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnSettings}>
+            <Text style={styles.textSettings}>Cabang</Text>
+            <Image source={require('../Assets/arrow.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnSettings}>
+            <Text style={styles.textSettings}>Uang Pembukaan</Text>
+            <Image source={require('../Assets/arrow.png')} />
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity style={styles.btnLogOut}>
+            <Text style={styles.textLogOut}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </>
+  );
 }
 
 export default Settings;

@@ -133,7 +133,7 @@ class Keuangan extends React.Component {
       const storage = JSON.parse(await AsyncStorage.getItem('today'));
       console.log(storage);
       if (!storage) {
-        if (storage[0].date <= dateTodayMilisecond) {
+        if (storage[0].date <= dateTodayMilisecond()) {
           console.log(storage);
         } else {
           if (report !== null)
@@ -150,11 +150,11 @@ class Keuangan extends React.Component {
 
   viewReportToday() {
     const report = this.reportData();
-    console.log(dateTodayMilisecond());
-    const apa = dateTodayMilisecond().toString().substring(5);
-    console.log(apa <= 54000000);
-    const iya = getYoutubeLikeToDisplay(apa);
-    console.log(iya);
+    // console.log(dateTodayMilisecond());
+    // const apa = dateTodayMilisecond().toString().substring(5);
+    // console.log(apa <= 54000000);
+    // const iya = getYoutubeLikeToDisplay(apa);
+    // console.log(iya);
 
     if (report[0] !== null) {
       return (

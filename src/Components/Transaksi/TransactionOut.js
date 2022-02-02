@@ -1,15 +1,18 @@
 import React from 'react';
 import {View, Text, TextInput, TouchableOpacity, Alert} from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
-import {styles} from '../Transaksi';
+import {styles} from '../../Pages/Transaksi';
 import {convertPriceIDR} from '../../helper/utils';
 import {insertTransition} from '../../firebase';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import {CommonActions} from '@react-navigation/native';
+import moment from 'moment';
 
 class TransactionOut extends React.Component {
   constructor(props) {
     super(props);
+
+    this.moment = moment().format('YYYY-MM-DD');
 
     this.state = {
       product: [],
@@ -137,10 +140,8 @@ class TransactionOut extends React.Component {
     const set = new Set(product);
     let result = false;
     this.setState({duplicateProduct: false});
-    console.log(...listProduct);
 
     if (product.length !== set.size) {
-      console.log(set);
       result = true;
       this.setState({duplicateProduct: true});
     }
@@ -162,55 +163,60 @@ class TransactionOut extends React.Component {
         case 'Galon':
           data = {
             product: this.state.product[i],
-            date: new Date().getTime(),
+            date: this.moment,
             qty: this.state.jumlah[i],
             price: this.state.harga[i],
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
             type: 'out',
+            timestamps: new Date().getTime(),
           };
           break;
 
         case 'Es Batu':
           data = {
             product: this.state.product[i],
-            date: new Date().getTime(),
+            date: this.moment,
             qty: this.state.jumlah[i],
             price: this.state.harga[i],
             type: 'out',
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
+            timestamps: new Date().getTime(),
           };
           break;
 
         case 'Cup Ciler':
           data = {
             product: this.state.product[i],
-            date: new Date().getTime(),
+            date: this.moment,
             qty: this.state.jumlah[i],
             price: this.state.harga[i],
             type: 'out',
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
+            timestamps: new Date().getTime(),
           };
           break;
 
         case 'Plastik HD':
           data = {
             product: this.state.product[i],
-            date: new Date().getTime(),
+            date: this.moment,
             qty: this.state.jumlah[i],
             price: this.state.harga[i],
             type: 'out',
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
+            timestamps: new Date().getTime(),
           };
           break;
 
         case 'Kresek':
           data = {
             product: this.state.product[i],
-            date: new Date().getTime(),
+            date: this.moment,
             qty: this.state.jumlah[i],
             price: this.state.harga[i],
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
             type: 'out',
+            timestamps: new Date().getTime(),
           };
           break;
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
-import TransactionIn from './Transaksi/TransactionIn';
-import TransactionOut from './Transaksi/TransactionOut';
+import TransactionIn from '../Components/Transaksi/TransactionIn';
+import TransactionOut from '../Components/Transaksi/TransactionOut';
 import RNPickerSelect from 'react-native-picker-select';
 
 const styles = StyleSheet.create({

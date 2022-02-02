@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext, useReducer} from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,9 @@ import {
   Dimensions,
 } from 'react-native';
 import {useTheme} from '@react-navigation/native';
-
+import AsyncStorageLib from '@react-native-async-storage/async-storage';
 const {height} = Dimensions.get('window');
+import {initialState, reducer, UserContext} from '../Redux/reducer';
 
 const styles = StyleSheet.create({
   profileImage: {
@@ -69,11 +70,22 @@ const styles = StyleSheet.create({
 
 function Settings({navigation}) {
   const theme = useTheme();
+  const readData = useContext(UserContext);
+  const [state] = useReducer(reducer, initialState);
+
+  const logOut = async () => {
+    try {
+      await AsyncStorageLib.clear();
+      await readData();
+    } catch (error) {
+      return error;
+    }
+  };
   return (
     <>
       <View style={styles.profileImage}>
         <View style={styles.profileInfo}>
-          <Text>Mohammad Ardyy</Text>
+          <Text>{state?.sessionLogin.data.name}</Text>
           <Text>Es permen karet</Text>
         </View>
         <View>
@@ -88,7 +100,11 @@ function Settings({navigation}) {
       />
       <View style={styles.squareRadiuses}>
         <View>
-          <TouchableOpacity style={[styles.btnSettings, {marginTop: 50}]}>
+          <TouchableOpacity
+            style={[styles.btnSettings, {marginTop: 50}]}
+            onPress={() => {
+              navigation.navigate('SettingOutlite');
+            }}>
             <Text style={styles.textSettings}>Pengaturan Harga</Text>
             <Image source={require('../Assets/arrow.png')} />
           </TouchableOpacity>
@@ -102,7 +118,7 @@ function Settings({navigation}) {
           </TouchableOpacity>
         </View>
         <View>
-          <TouchableOpacity style={styles.btnLogOut}>
+          <TouchableOpacity onPress={() => logOut()} style={styles.btnLogOut}>
             <Text style={styles.textLogOut}>Log Out</Text>
           </TouchableOpacity>
         </View>

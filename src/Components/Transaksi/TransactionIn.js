@@ -1,11 +1,12 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
-import {styles} from '../Transaksi';
+import {styles} from '../../Pages/Transaksi';
 import {convertPriceIDR} from '../../helper/utils';
 import {insertTransition} from '../../firebase';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import {CommonActions} from '@react-navigation/native';
+import moment from 'moment';
 
 const MoneyIn = ({navigation, theme}) => {
   const [product, setProduct] = useState(0);
@@ -14,6 +15,7 @@ const MoneyIn = ({navigation, theme}) => {
     {label: 'Cup', value: 1},
     {label: 'Plastik & Cup', value: 'Plastik & Cup'},
   ]);
+  const time = moment().format('YYYY-MM-DD');
   const [jumlah, setJumlah] = useState('');
   const [jumlahCup, setJumlahCup] = useState('');
   const [jumlahPlastik, setJumlahPlastik] = useState('');
@@ -146,14 +148,14 @@ const MoneyIn = ({navigation, theme}) => {
 
   const productFilterSubmit = () => {
     let data = {
-      product: typeProduct,
-      date: new Date().getTime(),
+      product: product,
+      date: time,
       qty: parseInt(jumlah),
       price: 0,
       totalPrices: 0,
+      timestamps: new Date().getTime(),
       type: '',
     };
-    let typeProduct = product;
     if (product === 1) {
       data.product = 'Cup';
       data.price = nameProduct[product - 1].price;
@@ -171,12 +173,13 @@ const MoneyIn = ({navigation, theme}) => {
       nameProduct.map((value, index) => {
         data = {
           product: value.product,
-          date: new Date().getTime(),
+          date: time,
           qty: index === 0 ? jumlahCup : jumlahPlastik,
           price: value.price,
           totalPrices:
             index === 0 ? value.price * jumlahCup : value.price * jumlahPlastik,
           type: 'in',
+          timestamps: new Date().getTime(),
         };
         ordersAll.push(data);
       });

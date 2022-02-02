@@ -22,6 +22,8 @@ target 'transaksi' do
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-async-storage/async-storage'
 
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
   target 'transaksiTests' do
     inherit! :complete
     # Pods for testing

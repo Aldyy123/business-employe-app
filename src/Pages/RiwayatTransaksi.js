@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  ToastAndroid,
   Text,
   Image,
   ScrollView,
@@ -14,6 +13,8 @@ import {
 import {historyTransactions} from '../firebase';
 import {convertPriceIDR} from '../helper/utils';
 import moment from 'moment';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
 
 const {width, height} = Dimensions.get('window');
 
@@ -73,13 +74,14 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#FF5DA2',
     padding: 10,
-    height: height / 3,
+    height: height,
     // bottom: 0,
   },
   dotStripUp: {
     width: 100,
     height: 10,
     marginTop: 10,
+    marginBottom: 20,
     borderRadius: 100,
     alignSelf: 'center',
     backgroundColor: 'white',
@@ -102,16 +104,24 @@ const styles = StyleSheet.create({
     marginLeft: 30,
   },
   closeBtn: {
-    width: 100,
-    height: 30,
-    backgroundColor: 'blue',
     color: 'black',
     alignSelf: 'center',
+  },
+  containerNotFound: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    flex: 1,
+    alignItems: 'center',
+  },
+  textNotFound: {
+    fontWeight: 'bold',
+    fontSize: 30,
   },
 });
 
 function ItemHistory(items) {
-  const momentDate = moment(items.data.date).format('D, MMM YYYY hh:mm a');
+  const momentDate = moment(items.data.timestamps).format('D, MMM YYYY HH:mm');
   return (
     <>
       <View style={styles.containerHistory}>
@@ -143,11 +153,15 @@ class RiwayatTransaksi extends React.Component {
       data: [],
       offset: new Animated.Value(900.0),
       value: 900,
+      type: false,
     };
   }
 
-  translateUp() {
-    this.setState({value: 476});
+  translateUp(typeSetting) {
+    this.setState({
+      value: typeSetting ? height / 2 : height / 4,
+      type: typeSetting,
+    });
     // Animated.timing(this.state.offset, {
     //   toValue: 470.0,
     //   duration: 0,
@@ -169,17 +183,14 @@ class RiwayatTransaksi extends React.Component {
     }).start();
   };
 
-  btnFilterOld() {
-    historyTransactions('asc')
-      .then(value => {
-        this.setState({data: value.docs, filter: true});
-      })
-      .catch(err => {
-        console.log(err);
-      });
+  btnSortReverse() {
+    if (!this.state.filter) {
+      const temp = this.state.data.reverse();
+      this.setState({data: temp, filter: true});
+    }
   }
 
-  btnFilterNew() {
+  getHistoryTransactions() {
     historyTransactions()
       .then(value => {
         this.setState({data: value.docs, filter: false});
@@ -189,8 +200,26 @@ class RiwayatTransaksi extends React.Component {
       });
   }
 
+  filterWithDate(date) {
+    console.log(date.dateString);
+    historyTransactions(date.dateString)
+      .then(value => {
+        this.setState({data: value.docs, filter: false});
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  btnSortNew() {
+    if (this.state.filter) {
+      const temp = this.state.data.reverse();
+      this.setState({data: temp, filter: false});
+    }
+  }
+
   componentDidMount() {
-    this.btnFilterNew();
+    this.getHistoryTransactions();
   }
 
   RenderHistoryTransition({data, theme}) {
@@ -220,6 +249,18 @@ class RiwayatTransaksi extends React.Component {
     return null;
   }
 
+  filterNotFound() {
+    if (this.state.data.length <= 0) {
+      return (
+        <>
+          <View style={styles.containerNotFound}>
+            <Text style={styles.textNotFound}>Data Tanggal tidak ada</Text>
+          </View>
+        </>
+      );
+    }
+  }
+
   render() {
     return (
       <>
@@ -228,19 +269,22 @@ class RiwayatTransaksi extends React.Component {
             data={this.state.data}
             theme={this.props.route.params.theme}
           />
+          {this.filterNotFound()}
         </ScrollView>
         <View style={styles.floatingContainer}>
           <TouchableOpacity
             style={styles.floatingBtn}
             onPress={() => {
-              ToastAndroid.show('Fitur belum ada', 1000);
+              this.translateUp(false);
             }}>
-            <Text>Sort</Text>
+            <Text>Filter</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => this.translateUp()}
+            onPress={() => {
+              this.translateUp(true);
+            }}
             style={styles.floatingBtn}>
-            <Text>Filter</Text>
+            <Text>Sort</Text>
           </TouchableOpacity>
         </View>
         <Animated.View
@@ -255,38 +299,46 @@ class RiwayatTransaksi extends React.Component {
             },
           ]}>
           <View style={styles.dotStripUp} />
-          <View style={styles.container}>
-            <TouchableOpacity
-              style={[styles.containerFilter]}
-              onPress={() => this.btnFilterOld()}>
-              <View
-                style={[
-                  styles.choseFilter,
-                  {
-                    backgroundColor: this.state.filter ? 'blue' : 'white',
-                  },
-                ]}
-              />
-              <Text style={styles.textFilter}>Terlama</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.containerFilter}
-              onPress={() => this.btnFilterNew()}>
-              <View
-                style={[
-                  styles.choseFilter,
-                  {
-                    backgroundColor: this.state.filter ? 'white' : 'blue',
-                  },
-                ]}
-              />
-              <Text style={styles.textFilter}>Terbaru</Text>
-            </TouchableOpacity>
-          </View>
+          {this.state.type ? (
+            <View style={styles.container}>
+              <TouchableOpacity
+                style={[styles.containerFilter]}
+                onPress={() => this.btnSortReverse()}>
+                <View
+                  style={[
+                    styles.choseFilter,
+                    {
+                      backgroundColor: this.state.filter ? 'blue' : 'white',
+                    },
+                  ]}
+                />
+                <Text style={styles.textFilter}>Terlama</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.containerFilter}
+                onPress={() => this.btnSortNew()}>
+                <View
+                  style={[
+                    styles.choseFilter,
+                    {
+                      backgroundColor: this.state.filter ? 'white' : 'blue',
+                    },
+                  ]}
+                />
+                <Text style={styles.textFilter}>Terbaru</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Calendar onDayPress={this.filterWithDate.bind(this)} />
+          )}
           <TouchableOpacity
             style={styles.closeBtn}
             onPress={() => this.translateDown()}>
-            <Text>Close</Text>
+            <Ionicons
+              name={'close-circle'}
+              size={50}
+              color={this.props.route.params.theme.colors.background}
+            />
           </TouchableOpacity>
         </Animated.View>
       </>

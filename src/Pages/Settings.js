@@ -113,7 +113,13 @@ function Settings({navigation}) {
             <Image source={require('../Assets/arrow.png')} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.btnSettings}>
-            <Text style={styles.textSettings}>Uang Pembukaan</Text>
+            <Text style={styles.textSettings}>
+              Pengaturan pengeluaran Barang
+            </Text>
+            <Image source={require('../Assets/arrow.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnSettings}>
+            <Text style={styles.textSettings}>Pengaturan Stocks</Text>
             <Image source={require('../Assets/arrow.png')} />
           </TouchableOpacity>
         </View>

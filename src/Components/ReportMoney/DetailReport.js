@@ -39,16 +39,13 @@ class DetailReport extends React.Component {
   pengeluaranBarang() {
     const component = [];
     if (this.state.dataMoney !== null) {
-      for (let i = 0; i < this.state.dataMoney[0].products.length; i++) {
+      for (let i = 0; i < this.state.dataMoney.productOut.length; i++) {
         component.push(
           <View style={styles.detailList} key={i}>
-            <Text>{this.state.dataMoney[0].products[i].product}</Text>
+            <Text>{this.state.dataMoney.productOut[i]}</Text>
             <Text>
               {this.state.dataMoney !== null
-                ? convertPriceIDR(
-                    this.state.dataMoney[0]?.products[i].price *
-                      this.state.dataMoney[0]?.products[i].qty,
-                  )
+                ? convertPriceIDR(this.state.dataMoney?.priceOut[i])
                 : convertPriceIDR(0)}
             </Text>
           </View>,
@@ -68,7 +65,7 @@ class DetailReport extends React.Component {
               <Text>Penghasilan: </Text>
               <Text>
                 {this.state.dataMoney !== null
-                  ? convertPriceIDR(this.state.dataMoney[0]?.moneyIn)
+                  ? convertPriceIDR(this.state.dataMoney?.incomeMoney)
                   : convertPriceIDR(0)}
               </Text>
             </View>
@@ -76,7 +73,7 @@ class DetailReport extends React.Component {
               <Text>Uang Keluar: </Text>
               <Text>
                 {this.state.dataMoney !== null
-                  ? convertPriceIDR(this.state.dataMoney[0]?.moneyOut)
+                  ? convertPriceIDR(this.state.dataMoney?.outcomeMoney)
                   : convertPriceIDR(0)}
               </Text>
             </View>
@@ -84,7 +81,7 @@ class DetailReport extends React.Component {
               <Text>Uang Buka: </Text>
               <Text>
                 {this.state.dataMoney !== null
-                  ? convertPriceIDR(this.state.dataMoney[0]?.openMoney)
+                  ? convertPriceIDR(this.state.dataMoney?.open_money)
                   : convertPriceIDR(0)}
               </Text>
             </View>
@@ -92,10 +89,7 @@ class DetailReport extends React.Component {
               <Text>Uang Tutup: </Text>
               <Text>
                 {this.state.dataMoney !== null
-                  ? convertPriceIDR(
-                      this.state.dataMoney[0]?.moneyIn +
-                        this.state.dataMoney[0]?.openMoney,
-                    )
+                  ? convertPriceIDR(this.state.dataMoney?.close_money)
                   : 0}
               </Text>
             </View>

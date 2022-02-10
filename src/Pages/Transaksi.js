@@ -1,8 +1,11 @@
-import React from 'react';
+import React, {useState, useReducer} from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import TransactionIn from '../Components/Transaksi/TransactionIn';
 import TransactionOut from '../Components/Transaksi/TransactionOut';
 import RNPickerSelect from 'react-native-picker-select';
+import {reducer, initialState} from '../Redux/reducer';
+import {setReportFinance, repotDetails} from '../firebase';
+import {designData} from '../helper/utils';
 
 const styles = StyleSheet.create({
   container: {
@@ -48,62 +51,64 @@ const styles = StyleSheet.create({
   },
 });
 
-class Transaksi extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedValue: null,
-      typeTransaction: [
-        {label: 'Masuk', value: 'Masuk'},
-        {label: 'Keluar', value: 'Keluar'},
-      ],
-      outProducts5: [
-        'Galon',
-        'Es Batu',
-        'Tutup Cup Plastik',
-        'Plastik HD',
-        'Kresek',
-      ],
-    };
-  }
-
-  NextProduct() {
-    if (this.state.selectedValue === 'Masuk') {
+const Transaksi = props => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [selectedValue, setSelectedValue] = useState(null);
+  const [typeTransaction] = useState([
+    {label: 'Masuk', value: 'Masuk'},
+    {label: 'Keluar', value: 'Keluar'},
+  ]);
+  const [] = useState([
+    'Galon',
+    'Es Batu',
+    'Tutup Cup Plastik',
+    'Plastik HD',
+    'Kresek',
+  ]);
+  const NextProduct = () => {
+    if (selectedValue === 'Masuk') {
       return (
         <TransactionIn
-          navigation={this.props.navigation}
-          theme={this.props.route.params.theme}
+          navigation={props.navigation}
+          theme={props.route.params.theme}
+          insertReport={insertReport}
         />
       );
-    } else if (this.state.selectedValue === 'Keluar') {
+    } else if (selectedValue === 'Keluar') {
       return (
         <TransactionOut
-          navigation={this.props.navigation}
-          theme={this.props.route.params.theme}
+          navigation={props.navigation}
+          theme={props.route.params.theme}
+          user={state.sessionLogin}
+          insertReport={insertReport}
         />
       );
     }
     return null;
-  }
+  };
 
-  render() {
-    return (
-      <ScrollView>
-        <View style={[styles.container]}>
-          <View>
-            <Text style={styles.textTitle}>Tipe Transaksi</Text>
-            <RNPickerSelect
-              style={{viewContainer: styles.pickerStyle}}
-              onValueChange={value => this.setState({selectedValue: value})}
-              items={this.state.typeTransaction}
-            />
-          </View>
-          {this.NextProduct()}
+  const insertReport = async data => {
+    const detailReport = await repotDetails();
+    const designObject = designData(data, {detailReport, state});
+    await setReportFinance(designObject);
+  };
+
+  return (
+    <ScrollView>
+      <View style={[styles.container]}>
+        <View>
+          <Text style={styles.textTitle}>Tipe Transaksi</Text>
+          <RNPickerSelect
+            style={{viewContainer: styles.pickerStyle}}
+            onValueChange={setSelectedValue}
+            items={typeTransaction}
+          />
         </View>
-      </ScrollView>
-    );
-  }
-}
+        {NextProduct()}
+      </View>
+    </ScrollView>
+  );
+};
 
 export {styles};
 export default Transaksi;

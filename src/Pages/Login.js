@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import {loginEmploye} from '../firebase';
+import {loginEmploye, getSettingsOutlite} from '../firebase';
 import AsyncStorageLib from '@react-native-async-storage/async-storage';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import {UserContext} from '../Redux/reducer';
@@ -44,8 +44,13 @@ function Login() {
     try {
       setTimeout(async () => {
         const employe = await loginEmploye(username, password);
+        const settings = await getSettingsOutlite(employe.data.branchId);
         if (employe.found) {
           await AsyncStorageLib.setItem('login', JSON.stringify(employe));
+          await AsyncStorageLib.setItem(
+            'settings',
+            JSON.stringify(settings._data),
+          );
           await readData();
         } else {
           setFailure(true);

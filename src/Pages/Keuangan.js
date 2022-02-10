@@ -7,11 +7,8 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import {dateTodayMilisecond, getYoutubeLikeToDisplay} from '../helper/utils';
-import {getReportToday} from '../firebase';
+import {getReportToday, getListAllReports} from '../firebase';
 import {convertPriceIDR} from '../helper/utils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import moment from 'moment';
 
 const {width, height} = Dimensions.get('window');
 
@@ -67,96 +64,37 @@ class Keuangan extends React.Component {
     super(props);
 
     this.state = {
-      dataServe: [],
-      quickReport: null,
+      report: null,
+      listReports: [],
     };
   }
 
   componentDidMount() {
     getReportToday()
       .then(report => {
-        this.setState({dataServe: [...report.docs]});
+        this.setState({report: report._data});
       })
       .catch(err => {
         console.log(err);
       });
-  }
 
-  async componentDidUpdate() {
-    await this.insertLocalStorage();
-  }
-
-  reportData() {
-    let dataMorning = null,
-      dataEvening = null,
-      totalIn = 0,
-      totalOut = 0;
-    const now = new Date().getTime();
-    const product = [];
-
-    this.state.dataServe.map((value, key) => {
-      if (value._data.type === 'out') {
-        product.push({
-          product: value._data.product,
-          price: value._data.price,
-          qty: value._data.qty,
-        });
-        totalOut += value._data.totalPrices;
-      } else {
-        totalIn += value._data.totalPrices;
-      }
-      if (new Date().getHours() >= 15) {
-        dataEvening = {
-          moneyOut: totalOut,
-          moneyIn: totalIn,
-          date: now,
-          products: product,
-          openMoney: 150000,
-        };
-      } else {
-        dataMorning = {
-          moneyOut: totalOut,
-          moneyIn: totalIn,
-          date: now,
-          products: product,
-          openMoney: 150000,
-        };
-      }
-    });
-    const quickReport = [dataMorning, dataEvening];
-    return quickReport;
-  }
-
-  async insertLocalStorage() {
-    try {
-      const report = this.reportData();
-      const storage = JSON.parse(await AsyncStorage.getItem('today'));
-      console.log(storage);
-      if (!storage) {
-        if (storage[0].date <= dateTodayMilisecond()) {
-          console.log(storage);
-        } else {
-          if (report !== null)
-            await AsyncStorage.setItem('today', JSON.stringify(report));
-        }
-      } else {
-        if (report !== null)
-          await AsyncStorage.setItem('today', JSON.stringify(report));
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    getListAllReports()
+      .then(reports => {
+        this.setState({listReports: reports});
+      })
+      .catch(err => console.log(err));
   }
 
   viewReportToday() {
-    const report = this.reportData();
+    const {report} = this.state;
+    // const report = this.reportData();
     // console.log(dateTodayMilisecond());
     // const apa = dateTodayMilisecond().toString().substring(5);
     // console.log(apa <= 54000000);
     // const iya = getYoutubeLikeToDisplay(apa);
     // console.log(iya);
 
-    if (report[0] !== null) {
+    if (report !== null) {
       return (
         <TouchableOpacity
           style={styles.reportToday}
@@ -167,7 +105,7 @@ class Keuangan extends React.Component {
           }>
           <Text style={[styles.titleToday, styles.textTitle]}>Hari ini</Text>
           <Text style={[styles.textPriceToday]}>
-            {convertPriceIDR(report[0].moneyIn)}
+            {convertPriceIDR(report.incomeMoney)}
           </Text>
         </TouchableOpacity>
       );
@@ -180,20 +118,36 @@ class Keuangan extends React.Component {
     );
   }
 
+  viewAllReports() {
+    if (this.state.listReports !== undefined) {
+      return (
+        <>
+          {!this.state.listReports?.empty ? (
+            this.state.listReports?._docs?.map(report => (
+              <View style={styles.containerItem}>
+                <View style={styles.itemLeft}>
+                  <Text style={styles.textTitle}>Senin</Text>
+                  <Text style={styles.textLitle}>40 Desember</Text>
+                </View>
+                <View style={styles.itemRight}>
+                  <Text style={styles.textLitle}>Rp 4000</Text>
+                </View>
+              </View>
+            ))
+          ) : (
+            <Text>Gak ada</Text>
+          )}
+        </>
+      );
+    }
+  }
+
   render() {
     return (
       <>
         {this.viewReportToday()}
         <ScrollView style={styles.container}>
-          <View style={styles.containerItem}>
-            <View style={styles.itemLeft}>
-              <Text style={styles.textTitle}>Senin</Text>
-              <Text style={styles.textLitle}>40 Desember</Text>
-            </View>
-            <View style={styles.itemRight}>
-              <Text style={styles.textLitle}>Rp 4000</Text>
-            </View>
-          </View>
+          {this.viewAllReports()}
         </ScrollView>
       </>
     );

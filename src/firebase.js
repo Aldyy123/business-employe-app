@@ -3,6 +3,19 @@ import {dateTodayMilisecond} from './helper/utils';
 import moment from 'moment';
 const time = moment().format('YYYY-MM-DD');
 
+const setReportFinance = data => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const report = await firestore()
+        .collection('reports')
+        .doc(time)
+        .set(data);
+      resolve(report);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 const insertTransition = data => {
   return new Promise((resolve, reject) => {
     try {
@@ -14,12 +27,13 @@ const insertTransition = data => {
   });
 };
 
-const historyTransactions = (filter = time) => {
+const historyTransactions = (branch, filter = time) => {
   return new Promise((resolve, reject) => {
     try {
       const transactions = firestore()
         .collection('transactions')
         .where('date', '==', filter)
+        .where('branchId', '==', branch)
         .get();
       resolve(transactions);
     } catch (error) {
@@ -31,10 +45,32 @@ const historyTransactions = (filter = time) => {
 const getReportToday = () => {
   return new Promise((resolve, reject) => {
     try {
-      const report = firestore()
-        .collection('transactions')
-        .where('date', '>=', dateTodayMilisecond())
+      const report = firestore().collection('reports').doc(time).get();
+      resolve(report);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const getListAllReports = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const reports = await firestore()
+        .collection('reports')
+        .where('date', '!=', time)
         .get();
+      resolve(reports);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const repotDetails = (id = time) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const report = await firestore().collection('reports').doc(id).get();
       resolve(report);
     } catch (error) {
       reject(error);
@@ -93,6 +129,56 @@ const loginEmploye = (id, password) => {
   });
 };
 
+const stock_usage = data => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const usageStock = await firestore()
+        .collection('usage-stock')
+        .doc(time)
+        .set(data);
+      resolve(usageStock);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const getStockUsage = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const usageStock = await firestore().collection('usage-stock').get();
+      resolve(usageStock);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const setStocks = data => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const stocks = await firestore()
+        .collection('stocks')
+        .doc(data.branchId)
+        .set(data);
+      resolve(stocks);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const getStocksBranch = id => {
+  return new Promise((resolve, reject) => {
+    try {
+      const stocks = firestore().collection('stocks').doc(id).get();
+      resolve(stocks);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export {
   insertTransition,
   historyTransactions,
@@ -101,4 +187,11 @@ export {
   insertSettingOutlite,
   getSettingsOutlite,
   loginEmploye,
+  setReportFinance,
+  repotDetails,
+  getListAllReports,
+  stock_usage,
+  setStocks,
+  getStockUsage,
+  getStocksBranch,
 };

@@ -14,7 +14,7 @@ import {historyTransactions} from '../firebase';
 import {convertPriceIDR} from '../helper/utils';
 import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
+import {Calendar} from 'react-native-calendars';
 
 const {width, height} = Dimensions.get('window');
 
@@ -154,6 +154,7 @@ class RiwayatTransaksi extends React.Component {
       offset: new Animated.Value(900.0),
       value: 900,
       type: false,
+      selectedDay: {},
     };
   }
 
@@ -191,7 +192,7 @@ class RiwayatTransaksi extends React.Component {
   }
 
   getHistoryTransactions() {
-    historyTransactions()
+    historyTransactions(this.props.route.params.user.data.branchId)
       .then(value => {
         this.setState({data: value.docs, filter: false});
       })
@@ -201,8 +202,13 @@ class RiwayatTransaksi extends React.Component {
   }
 
   filterWithDate(date) {
-    console.log(date.dateString);
-    historyTransactions(date.dateString)
+    const dateSelect = date.dateString;
+    this.setState({
+      selectedDay: {
+        [dateSelect]: {selected: true, marked: true, selectedColor: 'blue'},
+      },
+    });
+    historyTransactions(this.props.route.params.user.data.branchId, dateSelect)
       .then(value => {
         this.setState({data: value.docs, filter: false});
       })
@@ -262,6 +268,7 @@ class RiwayatTransaksi extends React.Component {
   }
 
   render() {
+    console.log(this.state.selectedDay);
     return (
       <>
         <ScrollView style={styles.container}>
@@ -329,7 +336,20 @@ class RiwayatTransaksi extends React.Component {
               </TouchableOpacity>
             </View>
           ) : (
-            <Calendar onDayPress={this.filterWithDate.bind(this)} />
+            <Calendar
+              onDayPress={this.filterWithDate.bind(this)}
+              // headerStyle={{backgroundColor: 'blue'}}
+              markedDates={this.state.selectedDay}
+              style={{
+                backgroundColor: '#FF5DA2',
+              }}
+              theme={{
+                // backgroundColor: '#FF5DA2',
+                selectedDayBackgroundColor: 'red',
+                selectedDotColor: 'red',
+                selectedDayTextColor: 'red',
+              }}
+            />
           )}
           <TouchableOpacity
             style={styles.closeBtn}

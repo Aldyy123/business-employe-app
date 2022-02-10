@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
+import {getStockUsage} from '../firebase';
 
 const {height} = Dimensions.get('window');
 
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   itemsStock: {
-    backgroundColor: 'blue',
+    backgroundColor: '#92A9BD',
     padding: 10,
     margin: 5,
   },
@@ -43,15 +44,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   floatingActionBtn: {
-    // borderRadius: '50%',
+    borderRadius: '50%',
     position: 'absolute',
     bottom: '10%',
     left: '90%',
+  },
+  textWhite: {
+    color: 'white',
   },
 });
 
 const Stock = () => {
   const navigation = useNavigation();
+  const [stocks, setStocks] = useState([]);
+
+  useEffect(() => {
+    getStockUsage()
+      .then(stoks => setStocks(stoks))
+      .catch(err => console.log(err));
+  }, []);
+  console.log(stocks);
   return (
     <>
       <SafeAreaView style={styles.container}>
@@ -60,26 +72,34 @@ const Stock = () => {
           <Text style={styles.headerText}>Pemakaian</Text>
         </View>
         <ScrollView>
-          <View style={styles.itemsStock}>
-            <Text style={styles.textItemDate}>2020 22 200</Text>
-            <View style={styles.itemStuff}>
-              <View>
-                <Text>20</Text>
-                <Text>20</Text>
-                <Text>20</Text>
-              </View>
-              <View>
-                <Text>Susu</Text>
-                <Text>Susu 2,2</Text>
-                <Text>Sirup</Text>
-              </View>
-              <View>
-                <Text>1</Text>
-                <Text>2</Text>
-                <Text>2</Text>
-              </View>
-            </View>
-          </View>
+          {!stocks?.empty
+            ? stocks?._docs?.map(stock => (
+                <View style={styles.itemsStock} key={stock._data.stock_id}>
+                  <Text style={styles.textItemDate}>{stock._data.date}</Text>
+                  <View style={styles.itemStuff}>
+                    <View>
+                      <Text style={styles.textWhite}>{stock._data.sirup}</Text>
+                      <Text style={styles.textWhite}>20</Text>
+                      <Text style={styles.textWhite}>20</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.textWhite}>Susu 1kg</Text>
+                      <Text style={styles.textWhite}>Susu 2,5kg</Text>
+                      <Text style={styles.textWhite}>Sirup</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.textWhite}>
+                        {stock._data.susu_kecil}
+                      </Text>
+                      <Text style={styles.textWhite}>
+                        {stock._data.susu_besar}
+                      </Text>
+                      <Text style={styles.textWhite}>{stock._data.sirup}</Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            : null}
         </ScrollView>
         <TouchableOpacity
           style={styles.floatingActionBtn}

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useReducer} from 'react';
+import {reducer, initialState} from '../Redux/reducer';
 import {useTheme} from '@react-navigation/native';
 import {
   SafeAreaView,
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
 
 const Home = ({navigation}) => {
   const theme = useTheme();
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   return (
     <>
@@ -52,7 +54,12 @@ const Home = ({navigation}) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('History', {theme: theme})}>
+          onPress={() =>
+            navigation.navigate('History', {
+              theme: theme,
+              user: state.sessionLogin,
+            })
+          }>
           <Image
             style={styles.image}
             source={require('../Assets/image-3.png')}

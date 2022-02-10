@@ -33,10 +33,11 @@ const App = () => {
 
   const readData = async () => {
     const user = JSON.parse(await AsyncStorageLib.getItem('login'));
+    const settings = JSON.parse(await AsyncStorageLib.getItem('settings'));
     if (user !== null) {
-      dispatch({type: 'GET_USER', user});
+      dispatch({type: 'GET_USER', user, settings});
     } else {
-      dispatch({type: 'GET_USER', user: null});
+      dispatch({type: 'GET_USER', user: null, settings: null});
     }
     setSessionLogin(user);
   };

@@ -158,6 +158,9 @@ class TransactionOut extends React.Component {
   productFilterSubmit() {
     let arrayData = [];
     let data = {};
+    let productOut = [];
+    let priceOut = [];
+    let outcome = 0;
     for (let i = 0; i < this.state.product.length; i++) {
       switch (this.state.product[i]) {
         case 'Galon':
@@ -169,7 +172,11 @@ class TransactionOut extends React.Component {
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
             type: 'out',
             timestamps: new Date().getTime(),
+            branchId: this.props.user.data.branchId,
           };
+          productOut.push(data.product);
+          priceOut.push(data.totalPrices);
+          outcome += data.totalPrices;
           break;
 
         case 'Es Batu':
@@ -181,7 +188,11 @@ class TransactionOut extends React.Component {
             type: 'out',
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
             timestamps: new Date().getTime(),
+            branchId: this.props.user.data.branchId,
           };
+          productOut.push(data.product);
+          priceOut.push(data.totalPrices);
+          outcome += data.totalPrices;
           break;
 
         case 'Cup Ciler':
@@ -193,7 +204,11 @@ class TransactionOut extends React.Component {
             type: 'out',
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
             timestamps: new Date().getTime(),
+            branchId: this.props.user.data.branchId,
           };
+          productOut.push(data.product);
+          priceOut.push(data.totalPrices);
+          outcome += data.totalPrices;
           break;
 
         case 'Plastik HD':
@@ -205,7 +220,11 @@ class TransactionOut extends React.Component {
             type: 'out',
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
             timestamps: new Date().getTime(),
+            branchId: this.props.user.data.branchId,
           };
+          productOut.push(data.product);
+          priceOut.push(data.totalPrices);
+          outcome += data.totalPrices;
           break;
 
         case 'Kresek':
@@ -217,7 +236,11 @@ class TransactionOut extends React.Component {
             totalPrices: this.state.harga[i] * this.state.jumlah[i],
             type: 'out',
             timestamps: new Date().getTime(),
+            branchId: this.props.user.data.branchId,
           };
+          productOut.push(data.product);
+          priceOut.push(data.totalPrices);
+          outcome += data.totalPrices;
           break;
 
         default:
@@ -225,6 +248,13 @@ class TransactionOut extends React.Component {
       }
       arrayData.push(data);
     }
+    this.props.insertReport({
+      productOut,
+      priceOut,
+      outcome,
+      date: this.moment,
+      timestamps: new Date().getTime(),
+    });
     return arrayData;
   }
 

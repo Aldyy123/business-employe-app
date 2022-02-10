@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useReducer} from 'react';
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import {styles} from '../../Pages/Transaksi';
@@ -7,8 +7,10 @@ import {insertTransition} from '../../firebase';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import {CommonActions} from '@react-navigation/native';
 import moment from 'moment';
+import {reducer, initialState} from '../../Redux/reducer';
 
-const MoneyIn = ({navigation, theme}) => {
+const MoneyIn = ({navigation, theme, insertReport}) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [product, setProduct] = useState(0);
   const [listProduct] = useState([
     {label: 'Plastik', value: 2},
@@ -35,7 +37,7 @@ const MoneyIn = ({navigation, theme}) => {
             <TextInput
               value={jumlah}
               style={[styles.pickerStyle, {color: theme.colors.text}]}
-              onChangeText={value => setJumlah(value.replace(/[^1-9]/g, ''))}
+              onChangeText={value => setJumlah(value.replace(/[^0-9]/g, ''))}
               keyboardType={'numeric'}
               placeholder={'Masukan Jumlah Beli'}
               dataDetectorTypes={'all'}
@@ -83,7 +85,7 @@ const MoneyIn = ({navigation, theme}) => {
             <TextInput
               value={jumlahCup}
               style={[styles.pickerStyle, {color: theme.colors.text}]}
-              onChangeText={value => setJumlahCup(value.replace(/[^1-9]/g, ''))}
+              onChangeText={value => setJumlahCup(value.replace(/[^0-9]/g, ''))}
               keyboardType={'numeric'}
               dataDetectorTypes={'all'}
             />
@@ -130,7 +132,6 @@ const MoneyIn = ({navigation, theme}) => {
         }
       });
     } else {
-      console.log(data);
       try {
         await insertTransition(data);
         setShowAlertSuccess(true);
@@ -155,21 +156,33 @@ const MoneyIn = ({navigation, theme}) => {
       totalPrices: 0,
       timestamps: new Date().getTime(),
       type: '',
+      branchId: state.sessionLogin.data.branchId,
     };
     if (product === 1) {
       data.product = 'Cup';
       data.price = nameProduct[product - 1].price;
       data.totalPrices = nameProduct[product - 1].price * jumlah;
       data.type = 'in';
+      insertReport({
+        income: data.totalPrices,
+        date: time,
+        timestamps: data.timestamps,
+      });
       return data;
     } else if (product === 2) {
       data.product = 'Plastik';
       data.price = nameProduct[product - 1].price;
       data.totalPrices = nameProduct[product - 1].price * jumlah;
       data.type = 'in';
+      insertReport({
+        income: data.totalPrices,
+        date: time,
+        timestamps: data.timestamps,
+      });
       return data;
     } else {
       const ordersAll = [];
+      let income = 0;
       nameProduct.map((value, index) => {
         data = {
           product: value.product,
@@ -180,9 +193,12 @@ const MoneyIn = ({navigation, theme}) => {
             index === 0 ? value.price * jumlahCup : value.price * jumlahPlastik,
           type: 'in',
           timestamps: new Date().getTime(),
+          branchId: state.sessionLogin.data.branchId,
         };
         ordersAll.push(data);
+        income += data.qty * value.price;
       });
+      insertReport({income, date: time, timestamps: data.timestamps});
       return ordersAll;
     }
   };

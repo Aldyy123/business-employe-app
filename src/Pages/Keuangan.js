@@ -92,9 +92,8 @@ class Keuangan extends React.Component {
     // const apa = dateTodayMilisecond().toString().substring(5);
     // console.log(apa <= 54000000);
     // const iya = getYoutubeLikeToDisplay(apa);
-    // console.log(iya);
 
-    if (report !== null) {
+    if (report) {
       return (
         <TouchableOpacity
           style={styles.reportToday}
@@ -105,7 +104,7 @@ class Keuangan extends React.Component {
           }>
           <Text style={[styles.titleToday, styles.textTitle]}>Hari ini</Text>
           <Text style={[styles.textPriceToday]}>
-            {convertPriceIDR(report.incomeMoney)}
+            {convertPriceIDR(report?.incomeMoney)}
           </Text>
         </TouchableOpacity>
       );
@@ -119,7 +118,7 @@ class Keuangan extends React.Component {
   }
 
   viewAllReports() {
-    if (this.state.listReports !== undefined) {
+    if (this.state?.listReports !== undefined) {
       return (
         <>
           {!this.state.listReports?.empty ? (

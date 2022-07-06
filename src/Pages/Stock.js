@@ -44,7 +44,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   floatingActionBtn: {
-    borderRadius: '50%',
     position: 'absolute',
     bottom: '10%',
     left: '90%',
@@ -63,19 +62,21 @@ const Stock = () => {
       .then(stoks => setStocks(stoks))
       .catch(err => console.log(err));
   }, []);
-  console.log(stocks);
   return (
     <>
       <SafeAreaView style={styles.container}>
-        <View style={styles.headerStock}>
-          <Text style={styles.headerText}>Total</Text>
-          <Text style={styles.headerText}>Pemakaian</Text>
-        </View>
         <ScrollView>
-          {!stocks?.empty
-            ? stocks?._docs?.map(stock => (
-                <View style={styles.itemsStock} key={stock._data.stock_id}>
-                  <Text style={styles.textItemDate}>{stock._data.date}</Text>
+          {!stocks?.empty ? (
+            stocks?._docs?.map(stock => (
+              <>
+                <View style={styles.headerStock}>
+                  <Text style={styles.headerText}>Total</Text>
+                  <Text style={styles.headerText}>Pemakaian</Text>
+                </View>
+                <View style={styles.itemsStock} key={stock.id}>
+                  <Text style={styles.textItemDate}>
+                    {stock._data.stock_id}
+                  </Text>
                   <View style={styles.itemStuff}>
                     <View>
                       <Text style={styles.textWhite}>{stock._data.sirup}</Text>
@@ -98,8 +99,13 @@ const Stock = () => {
                     </View>
                   </View>
                 </View>
-              ))
-            : null}
+              </>
+            ))
+          ) : (
+            <View>
+              <Text style={styles.headerText}>Stock data belum ada</Text>
+            </View>
+          )}
         </ScrollView>
         <TouchableOpacity
           style={styles.floatingActionBtn}
